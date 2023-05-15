@@ -1,19 +1,19 @@
-const { default: makeWASocket, DisconnectReason, useMultiFileAuthState } = require('@whiskeysockets/baileys')
+import makeWASocket, { DisconnectReason, useMultiFileAuthState } from '@whiskeysockets/baileys'
 
 async function connect() {
   const { state, saveCreds } = await useMultiFileAuthState('./auth/baileys')
 
-  const bot = makeWASocket({
+  const mongo = makeWASocket({
     printQRInTerminal: true,
     auth: state,
     defaultQueryTimeoutMs: undefined
   })
 
-  bot.ev.on('connection.update', (update: any) => {
-    const { connection, lastDisconnect } = update
+  mongo.ev.on('connection.update', (update) => {
+    const { connection } = update
 
     if (connection === 'close') {
-      const shouldReconnect = lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut
+      const shouldReconnect = DisconnectReason.loggedOut
 
       if (shouldReconnect) {
         connect()
@@ -21,9 +21,9 @@ async function connect() {
     }
   })
 
-  bot.ev.on('creds.update', saveCreds)
+  mongo.ev.on('creds.update', saveCreds)
 
-  return bot
+  return mongo
 }
 
 export default connect
