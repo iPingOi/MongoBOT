@@ -1,4 +1,4 @@
 /node_modules
-/auth/baileys
+/auth/baileys/*.json
 /pnpm-lock.yaml
 /.env
