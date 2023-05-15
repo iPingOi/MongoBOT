@@ -3,7 +3,7 @@ import { isCommand, extractDataFromMessage } from './utils'
 import Action from './action'
 
 // @types
-import makeWASocket from '@whiskeysockets/baileys'
+import makeWASocket from '@adiwajshing/baileys'
 
 async function middlewares(mongo: ReturnType<typeof makeWASocket>) {
   mongo.ev.on('messages.upsert', async ({ messages }) => {

@@ -1,5 +1,5 @@
 import { PREFIX, TEMP_FOLDER } from '../config'
-import { downloadContentFromMessage } from '@whiskeysockets/baileys'
+import { downloadContentFromMessage } from '@adiwajshing/baileys'
 import path from 'path'
 import { writeFile } from 'fs/promises'
 
@@ -7,8 +7,10 @@ function extractDataFromMessage(baileysMessage) {
   const textMessage = baileysMessage.message?.conversation
   const extendedTextMessage = baileysMessage.message?.extendedTextMessage?.text
   const imageTextMessage = baileysMessage.message?.imageMessage?.caption
+  const videoTextMessage = baileysMessage.message?.videoMessage?.caption
 
-  const fullMessage = textMessage || extendedTextMessage || imageTextMessage
+  const fullMessage =
+    textMessage || extendedTextMessage || imageTextMessage || videoTextMessage
 
   if (!fullMessage) {
     return {
@@ -17,15 +19,16 @@ function extractDataFromMessage(baileysMessage) {
       command: '',
       args: '',
       isImage: false,
-      isSticker: false
+      isVideo: false,
+      isSticker: false,
     }
   }
 
   const isImage = is(baileysMessage, 'image')
+  const isVideo = is(baileysMessage, 'video')
   const isSticker = is(baileysMessage, 'sticker')
 
   const [command, ...args] = fullMessage.trim().split(' ')
-
 
   const arg = args.reduce((acc, arg) => acc + ' ' + arg, '').trim()
 
@@ -35,16 +38,27 @@ function extractDataFromMessage(baileysMessage) {
     command: command.replace(PREFIX, '').trim(),
     args: arg.trim(),
     isImage,
-    isSticker: isSticker
+    isVideo,
+    isSticker,
   }
 }
 
 function is(baileysMessage, context) {
-  return !!baileysMessage.message?.[`${context}Message`] || !!baileysMessage.message?.extendedTextMessage?.contextInfo?.quotedMessage?.[`${context}Message`]
+  return (
+    !!baileysMessage.message?.[`${context}Message`] ||
+    !!baileysMessage.message?.extendedTextMessage?.contextInfo?.quotedMessage?.[
+    `${context}Message`
+    ]
+  )
 }
 
-function getContent(baileysMessage, context) {
-  return baileysMessage.message?.[`${context}Message`] || baileysMessage.message?.extendedTextMessage?.contextInfo?.quotedMessage?.[`${context}Message`]
+function getContent(baileysMessage, type) {
+  return (
+    baileysMessage.message?.[`${type}Message`] ||
+    baileysMessage.message?.extendedTextMessage?.contextInfo?.quotedMessage?.[
+    `${type}Message`
+    ]
+  )
 }
 
 function isCommand(baileysMessage) {
@@ -53,14 +67,14 @@ function isCommand(baileysMessage) {
   return fullMessage && fullMessage.startsWith(PREFIX)
 }
 
-async function downloadImage(baileysMessage, fileName) {
-  const content = getContent(baileysMessage, 'image')
+async function download(baileysMessage, fileName, context, extension) {
+  const content = getContent(baileysMessage, context)
 
   if (!content) {
     return null
   }
 
-  const stream = await downloadContentFromMessage(content, 'image')
+  const stream = await downloadContentFromMessage(content, context)
 
   let buffer = Buffer.from([])
 
@@ -68,33 +82,23 @@ async function downloadImage(baileysMessage, fileName) {
     buffer = Buffer.concat([buffer, chunk])
   }
 
-  const filePath = path.resolve(TEMP_FOLDER, `${fileName}.png`)
+  const filePath = path.resolve(TEMP_FOLDER, `${fileName}.${extension}`)
 
   await writeFile(filePath, buffer)
 
   return filePath
+}
+
+async function downloadImage(baileysMessage, fileName) {
+  return await download(baileysMessage, fileName, 'image', 'png')
 }
 
 async function downloadSticker(baileysMessage, fileName) {
-  const content = getContent(baileysMessage, 'sticker')
-
-  if (!content) {
-    return null
-  }
-
-  const stream = await downloadContentFromMessage(content, 'sticker')
-
-  let buffer = Buffer.from([])
-
-  for await (const chunk of stream) {
-    buffer = Buffer.concat([buffer, chunk])
-  }
-
-  const filePath = path.resolve(TEMP_FOLDER, `${fileName}.webp`)
-
-  await writeFile(filePath, buffer)
-
-  return filePath
+  return await download(baileysMessage, fileName, 'sticker', 'webp')
 }
 
-export { extractDataFromMessage, isCommand, downloadImage, downloadSticker }
+async function downloadVideo(baileysMessage, fileName) {
+  return await download(baileysMessage, fileName, 'video', 'mp4')
+}
+
+export { extractDataFromMessage, isCommand, downloadImage, downloadVideo, downloadSticker }
