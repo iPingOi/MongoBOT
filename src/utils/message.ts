@@ -1,6 +1,6 @@
 import { BOT_EMOJI, BOT_NAME, PREFIX } from "../config";
 
-function errorMessage(message) {
+function errorMessage(message: string) {
   return `${BOT_EMOJI} ❌ Erro: ${message}`
 }
 
@@ -21,4 +21,4 @@ function menuMessage() {
   ╰━━ 『🥭』━━`
 }
 
-export { errorMessage, menuMessage }
+export { errorMessage, menuMessage, BOT_NAME }

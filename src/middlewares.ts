@@ -29,10 +29,10 @@ async function middlewares(mongo: ReturnType<typeof makeWASocket>) {
         await action.gpt()
         break
       case 'menu':
-        await await mongo.sendMessage(remoteJid, { text: `${BOT_EMOJI}\n\n${menuMessage()}` })
+        await await mongo.sendMessage(remoteJid!, { text: `${BOT_EMOJI}\n\n${menuMessage()}` })
         break
       case 'ping':
-        await mongo.sendMessage(remoteJid, { text: `${BOT_EMOJI} Pong!` })
+        await mongo.sendMessage(remoteJid!, { text: `${BOT_EMOJI} Pong!` })
         break
     }
   })
