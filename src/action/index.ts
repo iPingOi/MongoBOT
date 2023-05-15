@@ -5,7 +5,7 @@ import { exec } from 'child_process'
 import fs from 'fs'
 
 // @types
-import makeWASocket from '@adiwajshing/baileys'
+import makeWASocket from '@whiskeysockets/baileys'
 
 class Action {
   mongo: ReturnType<typeof makeWASocket>

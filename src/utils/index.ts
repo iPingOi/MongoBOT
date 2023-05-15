@@ -1,5 +1,5 @@
 import { PREFIX, TEMP_FOLDER } from '../config'
-import { downloadContentFromMessage } from '@adiwajshing/baileys'
+import { downloadContentFromMessage } from '@whiskeysockets/baileys'
 import path from 'path'
 import { writeFile } from 'fs/promises'
 

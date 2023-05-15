@@ -1,4 +1,4 @@
-import makeWASocket, { DisconnectReason, useMultiFileAuthState } from '@adiwajshing/baileys'
+import makeWASocket, { DisconnectReason, useMultiFileAuthState } from '@whiskeysockets/baileys'
 
 async function connect() {
   const { state, saveCreds } = await useMultiFileAuthState('./auth/baileys')
