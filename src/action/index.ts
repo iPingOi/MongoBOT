@@ -29,8 +29,6 @@ class Action {
     this.isVideo = isVideo
     this.isSticker = isSticker
     this.baileysMessage = baileysMessage
-
-    console.log(remoteJid)
   }
 
   async sticker() {
@@ -66,47 +64,52 @@ class Action {
         }
       )
     } else {
-      const inputPath = await downloadVideo(this.baileysMessage, 'input')
+      const inputPath = await downloadVideo(this.baileysMessage, "input");
 
-      const sizeInSeconds = 10
+      const sizeInSeconds = 10;
 
-      const seconds: any =
+      const seconds =
         this.baileysMessage.message?.videoMessage?.seconds ||
         this.baileysMessage.message?.extendedTextMessage?.contextInfo
-          ?.quotedMessage?.videoMessage?.seconds
+          ?.quotedMessage?.videoMessage?.seconds;
 
-      const haveSecondsRule = seconds <= sizeInSeconds
+      const haveSecondsRule = seconds! <= sizeInSeconds;
 
       if (!haveSecondsRule) {
-        fs.unlinkSync(inputPath!)
+        fs.unlinkSync(inputPath!);
 
         await this.mongo.sendMessage(this.remoteJid, {
           text: errorMessage(`O vídeo que você enviou tem mais de ${sizeInSeconds} segundos!
-          Enviei um vídeo menor!`)
-        })
 
-        return
+Envie um vídeo menor!`),
+        });
+
+        return;
       }
 
       exec(
-        `ffmpeg -i ${inputPath} -y -vcodec libwebp -fs 0.99M -filter_complex '[0:v] scale=512:512,fps=12,pad=512:512:-1:-1:color=white@0.0,split[a][b][a]palettegen=reserve_transparent=on:transparency_color=ffffff[p][b][p]paletteuse' -f webp ${outputPath}`,
+        `ffmpeg -i ${inputPath} -y -vcodec libwebp -fs 6.99M -filter_complex "[0:v] scale=512:512,fps=12,pad=512:512:-1:-1:color=white@0.0,split[a][b];[a]palettegen=reserve_transparent=on:transparency_color=ffffff[p];[b][p]paletteuse" -f webp ${outputPath}`,
         async (error) => {
           if (error) {
-            fs.unlinkSync(inputPath!)
+            fs.unlinkSync(inputPath!);
 
-            await this.mongo.sendMessage(this.remoteJid, { text: errorMessage('Não foi possível converter o vídeo/gif figurinha!') })
+            await this.mongo.sendMessage(this.remoteJid, {
+              text: errorMessage(
+                "Não foi possível converter o vídeo/gif figurinha!"
+              ),
+            });
 
-            return
+            return;
           }
 
           await this.mongo.sendMessage(this.remoteJid, {
             sticker: { url: outputPath },
-          })
+          });
 
-          fs.unlinkSync(inputPath!)
-          fs.unlinkSync(outputPath)
+          fs.unlinkSync(inputPath!);
+          fs.unlinkSync(outputPath);
         }
-      )
+      );
     }
   }
 
@@ -121,6 +124,7 @@ class Action {
 
     exec(`ffmpeg -i ${inputPath} ${outputPath}`, async (error) => {
       if (error) {
+        fs.unlinkSync(inputPath!);
         await this.mongo.sendMessage(this.remoteJid, { text: errorMessage('Não foi possível converter o sticker para imagem!') })
         return
       }
