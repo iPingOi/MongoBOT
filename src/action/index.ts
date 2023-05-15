@@ -3,10 +3,12 @@ import { BOT_EMOJI, TEMP_FOLDER } from "../config"
 import { downloadImage, downloadSticker, downloadVideo, extractDataFromMessage } from "../utils"
 import { exec } from 'child_process'
 import fs from 'fs'
+import axios from "axios"
+import { errorMessage } from '../utils/message'
+
 
 // @types
 import makeWASocket from '@whiskeysockets/baileys'
-import axios from "axios"
 
 class Action {
   mongo: ReturnType<typeof makeWASocket>
@@ -48,7 +50,7 @@ class Action {
 
             fs.unlinkSync(inputPath);
 
-            await this.mongo.sendMessage(this.remoteJid, { text: `${BOT_EMOJI} ❌ Erro: Não foi possível converter a imagem para figurinha!` })
+            await this.mongo.sendMessage(this.remoteJid, { text: errorMessage('Não foi possível converter a imagem para figurinha!') })
 
             return;
           }
@@ -77,8 +79,9 @@ class Action {
         fs.unlinkSync(inputPath);
 
         await this.mongo.sendMessage(this.remoteJid, {
-          text: `${BOT_EMOJI} ❌ Erro: O vídeo que você enviou tem mais de ${sizeInSeconds} segundos!
-        Enviei um vídeo menor!` })
+          text: errorMessage(`O vídeo que você enviou tem mais de ${sizeInSeconds} segundos!
+          Enviei um vídeo menor!`)
+        })
 
         return;
       }
@@ -89,7 +92,7 @@ class Action {
           if (error) {
             fs.unlinkSync(inputPath);
 
-            await this.mongo.sendMessage(this.remoteJid, { text: `${BOT_EMOJI} ❌ Erro: Não foi possível converter o vídeo/gif figurinha!` })
+            await this.mongo.sendMessage(this.remoteJid, { text: errorMessage('Não foi possível converter o vídeo/gif figurinha!') })
 
             return;
           }
@@ -116,7 +119,7 @@ class Action {
 
     exec(`ffmpeg -i ${inputPath} ${outputPath}`, async (error) => {
       if (error) {
-        await this.mongo.sendMessage(this.remoteJid, { text: `${BOT_EMOJI} ❌ Erro: Não foi possível converter o sticker para imagem!` })
+        await this.mongo.sendMessage(this.remoteJid, { text: errorMessage('Não foi possível converter o sticker para imagem!') })
         return
       }
 

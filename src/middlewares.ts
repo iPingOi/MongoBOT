@@ -4,6 +4,7 @@ import Action from './action'
 
 // @types
 import makeWASocket from '@whiskeysockets/baileys'
+import { menuMessage } from './utils/message'
 
 async function middlewares(mongo: ReturnType<typeof makeWASocket>) {
   mongo.ev.on('messages.upsert', async ({ messages }) => {
@@ -26,6 +27,9 @@ async function middlewares(mongo: ReturnType<typeof makeWASocket>) {
         break
       case 'gpt':
         await action.gpt()
+        break
+      case 'menu':
+        await await mongo.sendMessage(remoteJid, { text: `${BOT_EMOJI}\n\n${menuMessage()}` })
         break
       case 'ping':
         await mongo.sendMessage(remoteJid, { text: `${BOT_EMOJI} Pong!` })
