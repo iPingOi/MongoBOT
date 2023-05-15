@@ -6,6 +6,7 @@ import fs from 'fs'
 
 // @types
 import makeWASocket from '@whiskeysockets/baileys'
+import axios from "axios"
 
 class Action {
   mongo: ReturnType<typeof makeWASocket>
@@ -125,6 +126,40 @@ class Action {
 
       fs.unlinkSync(inputPath)
       fs.unlinkSync(outputPath)
+    })
+  }
+
+  async gpt() {
+    await this.mongo.sendMessage(this.remoteJid, {
+      react: {
+        text: '🔃',
+        key: this.baileysMessage.key
+      }
+    })
+
+    const { data } = await axios.post(`https://api.openai.com/v1/chat/completions`, {
+      "model": "gpt-3.5-turbo",
+      "messages": [{ "role": "user", "content": this.args }],
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+      }
+    })
+
+    await this.mongo.sendMessage(this.remoteJid, {
+      react: {
+        text: '👌',
+        key: this.baileysMessage.key
+      }
+    })
+
+    const res = data.choices[0].message.content
+
+    await this.mongo.sendMessage(this.remoteJid, {
+      text: `${BOT_EMOJI}  ${res}`
+    }, {
+      quoted: this.baileysMessage
     })
   }
 }

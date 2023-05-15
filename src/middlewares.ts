@@ -21,11 +21,14 @@ async function middlewares(mongo: ReturnType<typeof makeWASocket>) {
       case 's':
         await action.sticker()
         break
+      case 'img':
+        await action.toImage()
+        break
+      case 'gpt':
+        await action.gpt()
+        break
       case 'ping':
         await mongo.sendMessage(remoteJid, { text: `${BOT_EMOJI} Pong!` })
-        break
-      case "img":
-        await action.toImage()
         break
     }
   })
